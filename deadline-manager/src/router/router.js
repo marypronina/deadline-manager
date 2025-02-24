@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AuthView from '../views/authView.vue'
+import HomeView from '../views/homeView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -9,14 +10,12 @@ const router = createRouter({
       name: 'authorization',
       component: AuthView
     },
-    // {
-    //   path: '/home',
-    //   name: 'home',
-    //   component: homeView
-    // },
+    {
+      path: '/home',
+      name: 'home',
+      component: HomeView
+    },
   ]
-})
-
-console.log(router);
+});
 
 export default router
