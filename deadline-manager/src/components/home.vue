@@ -1,19 +1,26 @@
 <template>
     <section>
+        <div class="top-settings flex-row-container">
+            <div class="greetings">
+                <h2 v-if="user">Hi,</h2>
+                <h2 v-if="user" class="icon-text">
+                    {{ user.name }}!
+                    <img
+                        src="../assets/icons/settings.png"
+                        alt="settings"
+                        class="icon"
+                    />
+                </h2>
+                <p v-else>loading user...</p>
+            </div>
+
+            <div class="switchers-container">
+                <button class="switcher" :class="{ active: viewMode === 'groupedCards' }" @click="viewMode = 'groupedCards'">Grouped</button>
+                <button class="switcher" :class="{ active: viewMode === 'timeline' }" @click="viewMode = 'timeline'">Timeline</button>
+            </div>
+        </div>
         <div class="container main-container">
             <div class="settings">
-                <div class="greetings">
-                    <h2 v-if="user">Hi,</h2>
-                    <h2 v-if="user" class="icon-text">
-                        {{ user.name }}!
-                        <img
-                            src="../assets/icons/settings.png"
-                            alt="settings"
-                            class="icon"
-                        />
-                    </h2>
-                    <p v-else>loading user...</p>
-                </div>
                 <div class="groups">
                     <h6>Groups:</h6>
                     <div v-if="groups" class="flex-col-container">
@@ -32,7 +39,9 @@
                                     class="checkbox-background"
                                     :style="{
                                         backgroundColor: group.color_hex,
-                                        '--checkbox-check-color': chooseColor(group.color_hex),
+                                        '--checkbox-check-color': chooseColor(
+                                            group.color_hex
+                                        ),
                                     }"
                                 ></span>
                                 {{ group.name }}
@@ -45,19 +54,16 @@
                 </div>
                 <span @click="handleCreateTaskModal" class="add large"></span>
             </div>
-            <div class="tasks-grid">
-                <div
-                    v-for="group in filteredGroupedTasks.slice().reverse()"
-                    :key="group.id"
-                    class="group-column"
-                >
-                    <h3 class="group-title" :style="{ color: '#232323' }">
-                        {{ group.name }}
-                    </h3>
-                    <div v-for="task in group.tasks.slice().reverse()" :key="task.id">
-                        <TaskCard :task="task" :color="group.color_hex" :links="taskLinks(task.id)"/>
-                    </div>
-                </div>
+
+            <div v-if="viewMode === 'groupedCards'">
+                <GroupedCards
+                    :groupedTasks="groupedTasks"
+                    :selectedGroups="selectedGroups"
+                    :links="links"
+                />
+            </div>
+            <div v-else>
+                <Timeline :tasks="tasks" :groups="groups" :selectedGroups="selectedGroups"/>
             </div>
         </div>
         <CreateGroupModal
@@ -78,7 +84,8 @@
 import { onMounted, ref, computed } from "vue";
 import { useRouter } from "vue-router";
 
-import TaskCard from "./taskCard.vue";
+import GroupedCards from "./groupedCards.vue";
+import Timeline from "./timeline.vue";
 import CreateGroupModal from "./createGroupModal.vue";
 import CreateTaskModal from "./createTaskModal.vue";
 
@@ -91,10 +98,13 @@ import { chooseColor } from "@/services/color";
 
 export default {
     components: {
-        TaskCard,
+        GroupedCards,
+        Timeline,
+
         CreateGroupModal,
         CreateTaskModal,
     },
+
     setup() {
         const router = useRouter();
 
@@ -108,6 +118,8 @@ export default {
 
         const showCreateGroupModal = ref(false);
         const showCreateTaskModal = ref(false);
+
+        const viewMode = ref("timeline");
 
         onMounted(async () => {
             try {
@@ -147,27 +159,16 @@ export default {
         const fetchLinks = async (userId) => {
             try {
                 links.value = await getUserLinks(userId);
-                console.log(links.value);
             } catch (error) {
                 console.error("Error fetching links: ", error);
             }
-        }
+        };
 
         const sortTasksByGroups = async () => {
             groupedTasks.value = groups.value.map((group) => ({
                 ...group,
                 tasks: tasks.value.filter((task) => task.group === group.id),
             }));
-        };
-
-        const filteredGroupedTasks = computed(() => {
-            return groupedTasks.value.filter((group) =>
-                selectedGroups.value.includes(group.id)
-            );
-        });
-
-        const taskLinks = (taskId) => {
-            return links.value.filter((link) => link.task === taskId);
         };
 
         const handleCreateGroupModal = () => {
@@ -191,12 +192,13 @@ export default {
 
         return {
             user,
+            viewMode,
 
             groups,
+            tasks,
             selectedGroups,
             groupedTasks,
-            filteredGroupedTasks,
-            taskLinks,
+            links,
 
             handleCreateGroupModal,
             showCreateGroupModal,

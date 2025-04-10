@@ -2,8 +2,10 @@
     font-family: "Inter", sans-serif;
 }
 
-html {
+html,
+body {
     scroll-behavior: smooth;
+    overflow: hidden;
 }
 
 html,
@@ -12,6 +14,7 @@ main,
 #app,
 section {
     height: 100%;
+    /* overflow: hidden; */
 }
 
 * {
@@ -99,6 +102,8 @@ label {
     display: flex;
     align-items: center;
     gap: 20px;
+
+    white-space: nowrap;
 }
 
 span.add {
@@ -124,8 +129,8 @@ span.add.large {
     height: 100px;
     font-size: 80px;
 
-    position: relative;
-    bottom: 50px;
+    /* position: relative; */
+    /* bottom: 50px; */
 }
 
 span.add::after {
@@ -181,6 +186,11 @@ Containers
 
 .main-container {
     display: flex;
+
+    height: calc(100vh - 150px);
+
+    position: relative;
+    overflow: auto;
 }
 
 .settings {
@@ -188,10 +198,18 @@ Containers
     flex-direction: column;
     gap: 50px;
     justify-content: space-between;
+    background-color: #fff;
+    z-index: 10;
 
-    width: 20vw;
+    /* width: 20vw; */
+    /* height: 769px !important; */
     flex-shrink: 0;
-    padding: 50px 15px 100px 50px;
+    padding: 50px;
+
+    position: sticky;
+    top: 0px;
+    left: 0;
+    /* overflow-x: hidden; */
 }
 
 .flex-col-container {
@@ -200,6 +218,14 @@ Containers
     gap: 20px;
 
     margin-top: 20px;
+}
+
+.flex-row-container {
+    display: flex;
+    /* justify-content: space-between; */
+    align-items: center;
+
+    padding: 0 50px;
 }
 
 .modal-container {
@@ -214,6 +240,23 @@ Containers
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
+
+    z-index: 100;
+}
+
+.top-settings {
+    width: 100%;
+    height: 150px;
+    background-color: #fff;
+
+    position: sticky;
+    top: 0;
+    left: 0;
+
+    z-index: 20;
+    overflow-x: hidden;
+
+    gap: 100px;
 }
 
 /*
@@ -241,6 +284,56 @@ Buttons
 
 .btn:hover {
     cursor: pointer;
+}
+
+.switchers-container {
+    display: flex;
+    gap: 20px;
+
+    padding: 5px;
+    background-color: #ececec;
+    border-radius: 30px;
+}
+
+.switcher {
+    border: none;
+    font-size: 20px;
+    padding: 5px 10px;
+    border-radius: 30px;
+    background: transparent;
+
+    cursor: pointer;
+
+    position: relative;
+}
+
+.active-switcher {
+    position: relative;
+    top: 5px;
+    bottom: 5px;
+    width: calc(50% - 10px);
+    background-color: #fff;
+    border-radius: 30px;
+    transition: transform 0.3s ease;
+}
+
+.switcher::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: #fff;
+    border-radius: 30px;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+    z-index: -1;
+}
+
+.switcher.active::before {
+    transform: scaleX(1);
+}
+
+.switcher.active {
+    z-index: 1;
 }
 
 /*
@@ -280,7 +373,7 @@ input.deadline {
     border-radius: 25px;
     padding: 10px;
 
-    content: '';
+    content: "";
 }
 
 textarea.description {
@@ -324,7 +417,7 @@ option {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;    
+    gap: 5px;
 }
 
 .new-link {
@@ -453,10 +546,12 @@ Tasks Grid
 
 .tasks-grid {
     display: flex;
-    flex-grow: 1;
     gap: 70px;
-    overflow-x: auto;
+
+    /* overflow: auto; */
+
     padding: 50px;
+    height: 100%;
 
     background-color: #ececec;
 }
@@ -478,7 +573,7 @@ Tasks Grid
     gap: 20px;
     justify-content: start;
 
-    height: 100vh;
+    height: 100%;
 }
 
 /*
@@ -578,6 +673,81 @@ Custom select
     width: 20px;
     height: 20px;
     border-radius: 50%;
+}
+
+/*
+===========================================
+Calendar
+===========================================
+*/
+
+.calendar {
+    /* padding: 50px; */
+    height: 100%;
+    width: 100%;
+
+    background-color: #ececec;
+
+    position: relative;
+}
+
+.timeline-header {
+    display: flex;
+    gap: 20px;
+
+    height: 100%;
+}
+
+.timeline-cell {
+    white-space: nowrap;
+
+    display: flex;
+    gap: 20px;
+    height: 100%;
+}
+
+.date-text {
+    padding: 20px;
+}
+
+.timeline-cell:first-child .date-text {
+    padding-left: 40px;
+}
+
+.delimeter {
+    width: 3px;
+    height: 100%;
+    background-color: #000;
+    opacity: 0.1;
+}
+
+/* .delimeter-horizontal {
+    width: 100%;
+    height: 3px;
+    background-color: #000;
+    opacity: 0.1;
+} */
+
+.task-bar {
+    position: absolute;
+    top: 50px;
+    height: 12px;
+    border-radius: 12px;
+    background-color: red;
+}
+
+
+.task-info {
+    position: fixed;
+    /* transform: translate(-50%, -100%); */
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    /* box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15); */
+    z-index: 99;
+    pointer-events: auto;
+    max-width: 300px;
+    /* font-size: 0.9rem; */
 }
 
 /*
