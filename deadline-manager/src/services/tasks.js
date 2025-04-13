@@ -21,3 +21,13 @@ export async function createTask(task) {
         console.error('Error creating task: ', error);
     }
 }
+
+export async function markTaskAsDone(taskId) {
+    try {
+        const updated = await pb.collection('tasks').update(taskId, {
+            status: "done",
+        });
+    } catch (error) {
+        console.error('Error setting status task: ', error);
+    }
+}

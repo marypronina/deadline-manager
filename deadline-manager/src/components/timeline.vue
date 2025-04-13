@@ -27,18 +27,20 @@
             :x="modalInfo.x"
             :y="modalInfo.y"
             :color="modalInfo.color"
+            :task="modalInfo.task"
+            :links="links"
             @cancel-close="cancelClose"
             @start-close="startClose"
-        >
-            <div>
-                {{ modalInfo.task.name }}
-            </div>
-        </TaskInfoModal>
+            @mark-as-done="markTaskAsDone"
+        />
+            
     </div>
 </template>
 
 <script>
 import TaskInfoModal from "./taskInfoModal.vue";
+import { formatDate } from "@/services/date";
+// import { chooseColor } from "@/services/color";
 
 export default {
     components: {
@@ -55,6 +57,10 @@ export default {
             required: true,
         },
         selectedGroups: {
+            type: Array,
+            required: true,
+        },
+        links: {
             type: Array,
             required: true,
         },
@@ -80,6 +86,7 @@ export default {
                 color: "#fff",
             },
             timerId: null,
+            formatDate,
         };
     },
 
@@ -120,16 +127,6 @@ export default {
     },
 
     methods: {
-        formatDate(date) {
-            date = new Date(date);
-            const formattedDate = date.toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-            });
-            return formattedDate;
-        },
-
         loadNextDates() {
             let currentLast = this.dates[0];
             if (!currentLast) {
@@ -195,8 +192,6 @@ export default {
                 task,
                 color: taskGroup.color_hex,
             };
-
-            console.log(this.modalInfo.x, this.modalInfo.y);
         },
 
         startClose() {
@@ -208,9 +203,13 @@ export default {
         cancelClose() {
             clearTimeout(this.timerId);
             this.timerId = null;
+        },
+
+        markTaskAsDone(taskId) {
+            this.$emit("show-confirm-notification", taskId);
         }
 
-        
+
         // handleScroll() {
         //     console.log('handle scroll');
         //     const timelineHeader = this.$refs.timelineHeader;

@@ -750,6 +750,11 @@ Calendar
     /* font-size: 0.9rem; */
 }
 
+.task-info .task-name {
+    font-size: 20px;
+    font-weight: 600;
+}
+
 /*
 ===========================================
 Media

@@ -15,8 +15,20 @@
             </div>
 
             <div class="switchers-container">
-                <button class="switcher" :class="{ active: viewMode === 'groupedCards' }" @click="viewMode = 'groupedCards'">Grouped</button>
-                <button class="switcher" :class="{ active: viewMode === 'timeline' }" @click="viewMode = 'timeline'">Timeline</button>
+                <button
+                    class="switcher"
+                    :class="{ active: viewMode === 'groupedCards' }"
+                    @click="viewMode = 'groupedCards'"
+                >
+                    Grouped
+                </button>
+                <button
+                    class="switcher"
+                    :class="{ active: viewMode === 'timeline' }"
+                    @click="viewMode = 'timeline'"
+                >
+                    Timeline
+                </button>
             </div>
         </div>
         <div class="container main-container">
@@ -63,7 +75,13 @@
                 />
             </div>
             <div v-else>
-                <Timeline :tasks="tasks" :groups="groups" :selectedGroups="selectedGroups"/>
+                <Timeline
+                    :tasks="tasks"
+                    :groups="groups"
+                    :selectedGroups="selectedGroups"
+                    :links="links"
+                    @show-confirm-notification="openConfirmNotification"
+                />
             </div>
         </div>
         <CreateGroupModal
@@ -77,6 +95,12 @@
             @close="handleCreateTaskModal"
             @taskCreated="handleNewTask"
         />
+
+        <ConfirmNotification 
+            v-if="showConfirmNotification"
+            @cancel-done-mark="closeConfirmNotificationModal"
+            @mark-task-as-done="confirmMarkAsDone"
+        />
     </section>
 </template>
 
@@ -88,10 +112,12 @@ import GroupedCards from "./groupedCards.vue";
 import Timeline from "./timeline.vue";
 import CreateGroupModal from "./createGroupModal.vue";
 import CreateTaskModal from "./createTaskModal.vue";
+import ConfirmNotification from "./confirmNotification.vue";
 
 import { getCurrentUser } from "../services/user";
 import { getUserGroups } from "../services/groups";
 import { getUserTasks } from "../services/tasks";
+import { markTaskAsDone } from "../services/tasks";
 import { getUserLinks } from "../services/links";
 
 import { chooseColor } from "@/services/color";
@@ -103,6 +129,7 @@ export default {
 
         CreateGroupModal,
         CreateTaskModal,
+        ConfirmNotification,
     },
 
     setup() {
@@ -118,6 +145,9 @@ export default {
 
         const showCreateGroupModal = ref(false);
         const showCreateTaskModal = ref(false);
+
+        const showConfirmNotification = ref(false);
+        const taskForMarking = ref(null);
 
         const viewMode = ref("timeline");
 
@@ -150,6 +180,7 @@ export default {
             try {
                 tasks.value = await getUserTasks(userId);
 
+                tasks.value = tasks.value.filter((task) => task.status !== "done");
                 sortTasksByGroups();
             } catch (error) {
                 console.error("Error fetching tasks: ", error);
@@ -190,6 +221,23 @@ export default {
             sortTasksByGroups();
         };
 
+        const openConfirmNotification = (taskId) => {
+            taskForMarking.value = taskId;
+            showConfirmNotification.value = true;
+        };
+
+        const closeConfirmNotificationModal = () => {
+            showConfirmNotification.value = false;
+        }
+
+        const confirmMarkAsDone = async () => {
+            await markTaskAsDone(taskForMarking.value);
+            tasks.value = tasks.value.filter((task) => task.id !== taskForMarking.value);
+            taskForMarking.value = null;
+
+            closeConfirmNotificationModal();
+        }
+
         return {
             user,
             viewMode,
@@ -207,6 +255,11 @@ export default {
             handleCreateTaskModal,
             showCreateTaskModal,
             handleNewTask,
+
+            openConfirmNotification,
+            showConfirmNotification,
+            closeConfirmNotificationModal,
+            confirmMarkAsDone,
 
             chooseColor,
         };
